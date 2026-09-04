@@ -1,21 +1,43 @@
 ---
-- name: Configure Web Server
+- name: Configure Application Server
   hosts: webservers
   become: true
 
   tasks:
-    - name: Install nginx
+    - name: Install required packages
       apt:
-        name: nginx
+        name:
+          - nginx
+          - curl
         state: present
         update_cache: true
 
-    - name: Create devops user
+    - name: Create application user
       user:
         name: devops
         state: present
+        shell: /bin/bash
+        create_home: true
 
-    - name: Start nginx service
+    - name: Configure application web page
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>DevOps Application Server</title>
+          </head>
+          <body>
+              <h1>Application Server Configured by Ansible</h1>
+              <p>Version 2 - Configuration Updated by Ansible</p>
+          </body>
+          </html>
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: Ensure nginx is started and enabled
       service:
         name: nginx
         state: started
